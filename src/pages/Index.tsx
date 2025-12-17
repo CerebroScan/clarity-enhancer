@@ -7,9 +7,12 @@ import { AboutSection } from "@/components/AboutSection";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("scan");
 
-  // Enable dark mode by default
+  // Enable dark mode by default (only on first load, header handles subsequent changes)
   useEffect(() => {
-    document.documentElement.classList.add("dark");
+    const saved = localStorage.getItem("theme");
+    if (!saved) {
+      document.documentElement.classList.add("dark");
+    }
   }, []);
 
   // Handle paste events for image upload
