@@ -1,6 +1,13 @@
 import { useState, useCallback } from "react";
 import { Upload, FileImage, X, Loader2, CheckCircle2, AlertTriangle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ScanStatus = "idle" | "ready" | "scanning" | "complete";
 type ResultConfidence = "certain" | "uncertain" | null;
@@ -12,6 +19,12 @@ interface ScanResult {
   confidenceLevel: ResultConfidence;
   allPredictions?: { stage: string; confidence: number }[];
 }
+
+const MODELS = [
+  { id: "atlas", name: "Atlas", architecture: "ResNet-50" },
+  { id: "orion", name: "Orion", architecture: "ResNet-101" },
+  { id: "pulse", name: "Pulse", architecture: "EfficientNet-B2" },
+];
 
 const MOCK_RESULTS: Record<string, ScanResult> = {
   normal: {
@@ -59,6 +72,7 @@ export function ScanSection() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showAllPredictions, setShowAllPredictions] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("atlas");
 
   const handleFile = useCallback((f: File) => {
     if (!f.type.startsWith("image/")) return;
@@ -129,12 +143,29 @@ export function ScanSection() {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Upload Card */}
         <div className="glass-card p-6 space-y-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              {statusDisplay.icon}
-              <span className={`font-medium ${status === "scanning" ? "scan-pulse" : ""}`}>
-                {statusDisplay.text}
-              </span>
+        <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 text-muted-foreground">
+                {statusDisplay.icon}
+                <span className={`font-medium ${status === "scanning" ? "scan-pulse" : ""}`}>
+                  {statusDisplay.text}
+                </span>
+              </div>
+              
+              {/* Model Selector */}
+              <Select value={selectedModel} onValueChange={setSelectedModel} disabled={status === "scanning"}>
+                <SelectTrigger className="w-[200px] bg-background">
+                  <SelectValue placeholder="Select model" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {MODELS.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      <span className="font-medium">{model.name}</span>
+                      <span className="text-muted-foreground ml-2">– {model.architecture}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="flex gap-3">
